@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#16407a" />
+    <title>轮胎库存</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <button id="backBtn" class="icon-btn" type="button" aria-label="返回">‹</button>
+        <h1 id="pageTitle">轮胎库存</h1>
+        <button id="adminEntryBtn" class="text-btn" type="button">管理</button>
+      </header>
+
+      <!-- 一、库存查询（谁打开都能用） -->
+      <section id="view-list" class="view">
+        <div class="searchbar">
+          <span class="search-icon">⌕</span>
+          <input
+            id="searchInput"
+            type="search"
+            placeholder="搜规格、花纹或系列，例如 195"
+            autocomplete="off"
+            enterkeyhint="search"
+          />
+          <button id="clearSearchBtn" class="clear-btn" type="button" aria-label="清空">✕</button>
+        </div>
+        <p id="listMeta" class="meta"></p>
+        <div id="listBody" class="list"></div>
+        <button id="moreBtn" class="btn ghost wide" type="button" hidden></button>
+        <button id="refreshBtn" class="btn quiet wide" type="button">刷新</button>
+      </section>
+
+      <!-- 二、商品详情 -->
+      <section id="view-detail" class="view" hidden></section>
+
+      <!-- 三、管理员登录 -->
+      <section id="view-login" class="view" hidden>
+        <div class="card">
+          <h2>管理员登录</h2>
+          <p class="hint">口令由云端校验，改前端代码也绕不过去。</p>
+          <label>
+            管理口令
+            <input id="loginPassword" type="password" placeholder="请输入口令" autocomplete="current-password" />
+          </label>
+          <button id="loginBtn" class="btn primary wide" type="button">进入管理后台</button>
+        </div>
+      </section>
+
+      <!-- 四、管理后台 -->
+      <section id="view-admin" class="view" hidden>
+        <div class="card whoami">
+          <div class="who">
+            <span id="adminWho">—</span>
+            <span id="adminRole" class="role"></span>
+          </div>
+          <button id="logoutBtn" class="text-btn" type="button">退出</button>
+        </div>
+
+        <div class="card">
+          <h2>单条入库 / 出库</h2>
+          <div class="grid-2">
+            <label class="wide2">规格 <span class="req">*</span><input id="opModel" placeholder="例如 195/60R15" /></label>
+            <label>花纹<input id="opPattern" placeholder="例如 ZTR50" /></label>
+            <label>数量 <span class="req">*</span><input id="opQty" type="number" inputmode="numeric" min="1" step="1" placeholder="10" /></label>
+            <label>单价<input id="opPrice" type="number" inputmode="decimal" step="0.01" placeholder="选填" /></label>
+          </div>
+          <div class="row">
+            <button id="stockInBtn" class="btn primary" type="button">入库</button>
+            <button id="stockOutBtn" class="btn danger" type="button">出库</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>批量入库</h2>
+          <p class="hint">支持 .xls / .xlsx / .csv。文件里要有「规格」「数量」两列，花纹和单价可选。</p>
+          <button id="inPickBtn" class="btn primary wide" type="button">选择文件并入库</button>
+          <input id="inFile" type="file" accept=".csv,.xls,.xlsx,.txt" hidden />
+          <details class="paste">
+            <summary>选不到文件？直接粘贴表格内容也行</summary>
+            <textarea id="inText" rows="4" placeholder="规格&#9;花纹&#9;数量&#9;单价"></textarea>
+            <button id="inTextBtn" class="btn ghost wide" type="button">解析粘贴的内容</button>
+          </details>
+          <div id="inPreview" class="preview" hidden></div>
+        </div>
+
+        <div class="card">
+          <h2>批量出库</h2>
+          <p class="hint">文件格式和批量入库一样。库存不够的行会单独列出来，不影响其他行。</p>
+          <button id="outPickBtn" class="btn danger wide" type="button">选择文件并出库</button>
+          <input id="outFile" type="file" accept=".csv,.xls,.xlsx,.txt" hidden />
+          <details class="paste">
+            <summary>选不到文件？直接粘贴表格内容也行</summary>
+            <textarea id="outText" rows="4" placeholder="规格&#9;花纹&#9;数量&#9;单价"></textarea>
+            <button id="outTextBtn" class="btn ghost wide" type="button">解析粘贴的内容</button>
+          </details>
+          <div id="outPreview" class="preview" hidden></div>
+        </div>
+
+        <div class="card">
+          <h2>导入价格表</h2>
+          <p class="hint">
+            支持 .xls / .xlsx / .csv。文件里要有「规格」（或商品名称）和价格列。
+            导入会整份替换同一份价格表，其他价格表不受影响。
+          </p>
+          <label>
+            价格表名称
+            <input id="priceListName" list="priceListOptions" placeholder="例如 安睿驰价格表" />
+            <datalist id="priceListOptions"></datalist>
+          </label>
+          <div id="priceListChips" class="chips" hidden></div>
+          <p id="priceListHint" class="hint"></p>
+          <button id="pricePickBtn" class="btn primary wide" type="button">选择价格表文件</button>
+          <input id="priceFile" type="file" accept=".csv,.xls,.xlsx,.txt" hidden />
+          <div id="pricePreview" class="preview" hidden></div>
+        </div>
+
+        <div class="card">
+          <h2>导出</h2>
+          <div class="grid-2">
+            <label>
+              格式
+              <select id="exportFormat">
+                <option value="csv">CSV（通用）</option>
+                <option value="xlsx">Excel（.xlsx）</option>
+              </select>
+            </label>
+            <label>
+              范围
+              <select id="exportScope">
+                <option value="all">全部规格</option>
+                <option value="stock">只有库存的</option>
+              </select>
+            </label>
+          </div>
+          <button id="exportBtn" class="btn primary wide" type="button">导出</button>
+          <details id="exportFallback" hidden>
+            <summary>没自动下载？点开长按复制</summary>
+            <textarea id="exportText" rows="8" readonly></textarea>
+          </details>
+          <p class="hint">微信里 xlsx 有时下载没反应，换 CSV 更稳。</p>
+        </div>
+
+        <div class="card">
+          <h2>最近出入库</h2>
+          <div id="movementList" class="list plain"></div>
+        </div>
+
+        <div class="card" id="adminManageCard" hidden>
+          <h2>管理员权限移交</h2>
+          <div id="adminList" class="list plain"></div>
+          <label>新管理员名称<input id="newAdminName" placeholder="例如 张三" /></label>
+          <label>登录口令<input id="newAdminPassword" placeholder="至少 6 位，自己定" /></label>
+          <button id="addAdminBtn" class="btn primary wide" type="button">添加管理员</button>
+          <p class="hint">删掉某个管理员后，他那边刷新页面就进不去后台了。</p>
+        </div>
+      </section>
+    </div>
+
+    <p id="importProgress" class="floating-progress" hidden></p>
+    <div id="toast" class="toast" hidden></div>
+    <div id="overlay" class="overlay" hidden>
+      <div class="spinner"></div>
+      <div id="overlayText">处理中…</div>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "name": "tire-stock-web",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "轮胎库存管理（网页版）：任何人可查，管理员可改，支持单条出入库与 CSV 批量导入",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "start": "node server/node-server.js",
+    "vendor": "node tools/vendor-xlsx.mjs",
+    "db:local": "wrangler d1 execute tire-stock --local --file=./schema.sql",
+    "db:remote": "wrangler d1 execute tire-stock --remote --file=./schema.sql",
+    "db:seed": "wrangler d1 execute tire-stock --local --file=./seed.sql",
+    "db:seed:remote": "wrangler d1 execute tire-stock --remote --file=./seed.sql",
+    "test": "node test/run-tests.mjs",
+    "smoke": "node test/http-smoke.mjs",
+    "ui": "node test/ui-test.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0",
+    "xlsx": "^0.18.5"
+  }
+}

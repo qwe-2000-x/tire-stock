@@ -1,0 +1,18 @@
+name = "tire-stock"
+main = "src/worker.js"
+compatibility_date = "2025-01-01"
+
+# 前端静态文件目录（index.html / app.js / csv.js / styles.css）
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+# 数据库：先执行 npx wrangler d1 create tire-stock
+# 然后把返回的 database_id 填到下面
+[[d1_databases]]
+binding = "DB"
+database_name = "tire-stock"
+database_id = "00000000-0000-0000-0000-000000000000"
+
+[observability]
+enabled = true
